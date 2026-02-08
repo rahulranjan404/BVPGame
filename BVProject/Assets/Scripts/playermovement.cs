@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+
 
 public class movementstatemanager : MonoBehaviour
 {
@@ -12,9 +14,11 @@ public class movementstatemanager : MonoBehaviour
 
     float hinput, vinput;
     Vector2 lastMoveDir;
-
+    string lastbutton;
     SpriteRenderer sr;
     CharacterController controller;
+
+    
 
     void Start()
     {
@@ -30,14 +34,59 @@ public class movementstatemanager : MonoBehaviour
         GetDirAndMove();
     }
 
+    enum LastInput
+    {
+        None,
+        Left,
+        Right,
+        Up,
+        Down
+    }
+    List<LastInput> heldInputs = new List<LastInput>(); //new
+    LastInput lastInput = LastInput.None;
+    LastInput prevLastInput = LastInput.None;
     void GetDirAndMove()
     {
-        hinput = Input.GetAxisRaw("Horizontal");
-        vinput = Input.GetAxisRaw("Vertical");
+         HandleKey(KeyCode.W, LastInput.Up);
+        HandleKey(KeyCode.S, LastInput.Down);
+        HandleKey(KeyCode.A, LastInput.Left);
+        HandleKey(KeyCode.D, LastInput.Right);
 
-        // ❌ prevent diagonal movement
-        if (hinput != 0)
+        if (heldInputs.Count > 0)
         {
+            lastInput = heldInputs[heldInputs.Count - 1];
+            prevLastInput = lastInput;
+        }
+        else
+        {
+            lastInput = LastInput.None;
+        }
+
+        Debug.Log(prevLastInput + " " + lastInput);
+
+        if (lastInput == LastInput.Left)
+        {
+            hinput = -1;
+            vinput = 0;
+        }
+        else if (lastInput == LastInput.Right)
+        {
+            hinput = 1;
+            vinput = 0;
+        }
+        else if (lastInput == LastInput.Up)
+        {
+            hinput = 0;
+            vinput = 1;
+        }
+        else if (lastInput == LastInput.Down)
+        {
+            hinput = 0;
+            vinput = -1;
+        }
+        else if (lastInput == LastInput.None)
+        {
+            hinput = 0;
             vinput = 0;
         }
 
@@ -45,8 +94,16 @@ public class movementstatemanager : MonoBehaviour
         controller.Move(dir * movespeed * Time.deltaTime);
 
         UpdateAnimations();
-    }
 
+    }
+    void HandleKey(KeyCode key, LastInput dir)
+    {
+        if (Input.GetKeyDown(key) && !heldInputs.Contains(dir))
+            heldInputs.Add(dir);
+
+        if (Input.GetKeyUp(key))
+            heldInputs.Remove(dir);
+    }
 
     void UpdateAnimations()
     {
@@ -83,18 +140,27 @@ public class movementstatemanager : MonoBehaviour
         // ───────── IDLE ─────────
         else
         {
-            if (Mathf.Abs(lastMoveDir.x) > Mathf.Abs(lastMoveDir.y))
+            if (prevLastInput == LastInput.Left)
             {
                 animator.SetBool("idleL", true);
+                sr.flipX = false;
             }
-            else if (lastMoveDir.y > 0)
+            else if (prevLastInput == LastInput.Right)
+            {
+                animator.SetBool("idleL", true);
+                sr.flipX = true;
+            }
+            else if (prevLastInput == LastInput.Up)
             {
                 animator.SetBool("idleF", true);
+                sr.flipX = false;
             }
             else
             {
                 animator.SetBool("idleB", true);
+                sr.flipX = false;
             }
         }
     }
+    
 }
