@@ -35,11 +35,18 @@ public class movementstatemanager : MonoBehaviour
         hinput = Input.GetAxisRaw("Horizontal");
         vinput = Input.GetAxisRaw("Vertical");
 
+        // ❌ prevent diagonal movement
+        if (hinput != 0)
+        {
+            vinput = 0;
+        }
+
         dir = new Vector3(hinput, 0f, vinput);
         controller.Move(dir * movespeed * Time.deltaTime);
 
         UpdateAnimations();
     }
+
 
     void UpdateAnimations()
     {
