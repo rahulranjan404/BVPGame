@@ -1,92 +1,93 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class movementstatemanager : MonoBehaviour
 {
-    public float movespeed = 3;
-    public LayerMask groundMask;
-    [HideInInspector] public Vector3 dir;
-    float hinput, vinput;
-    SpriteRenderer sr;
+    [Header("Movement")]
+    public float movespeed = 3f;
+
+    [Header("References")]
     [SerializeField] private Animator animator;
+
+    [HideInInspector] public Vector3 dir;
+
+    float hinput, vinput;
+    Vector2 lastMoveDir;
+
+    SpriteRenderer sr;
     CharacterController controller;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
-        controller = GetComponent<CharacterController>();   
+        controller = GetComponent<CharacterController>();
         sr = GetComponent<SpriteRenderer>();
-        
+
+        // Default facing direction (forward)
+        lastMoveDir = Vector2.up;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        getdirandmove();
-        RotateToMouse();
+        GetDirAndMove();
     }
 
-    void getdirandmove()
+    void GetDirAndMove()
     {
         hinput = Input.GetAxisRaw("Horizontal");
         vinput = Input.GetAxisRaw("Vertical");
 
-        UpdateAnimations();
-
         dir = new Vector3(hinput, 0f, vinput);
-        
+        controller.Move(dir * movespeed * Time.deltaTime);
 
-        controller.Move(dir*movespeed*Time.deltaTime);
+        UpdateAnimations();
     }
 
     void UpdateAnimations()
     {
-        animator.SetBool("runR", false);
+        // Reset all animation states
         animator.SetBool("runL", false);
         animator.SetBool("runF", false);
         animator.SetBool("runB", false);
 
-        if (hinput > 0)
-        {
-            animator.SetBool("runR", true);
-            sr.flipX = true;
-        }
-            
-        else if (hinput < 0)
-        {
-            animator.SetBool("runL", true);
-            sr.flipX = false;
-        }
-            
-        else if (vinput > 0)
-        {
-            animator.SetBool("runF", true);
-            sr.flipX = false;
-        }
-            
-        else if (vinput < 0)
-        {
-            animator.SetBool("runB", true);
-            sr.flipX = false;
-        }
-            
-    }
+        animator.SetBool("idleL", false);
+        animator.SetBool("idleF", false);
+        animator.SetBool("idleB", false);
 
-    void RotateToMouse()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundMask))
+        // ───────── MOVING ─────────
+        if (hinput != 0 || vinput != 0)
         {
-            Vector3 lookPoint = hit.point;
-            lookPoint.y = transform.position.y;
+            lastMoveDir = new Vector2(hinput, vinput);
 
-            Vector3 direction = lookPoint - transform.position;
-
-            if (direction.sqrMagnitude > 0.01f)
+            if (Mathf.Abs(hinput) > Mathf.Abs(vinput))
             {
-                Quaternion rotation = Quaternion.LookRotation(direction);
-                transform.rotation = rotation;
+                animator.SetBool("runL", true);
+                sr.flipX = hinput > 0;
+            }
+            else if (vinput > 0)
+            {
+                animator.SetBool("runF", true);
+                sr.flipX = false;
+            }
+            else
+            {
+                animator.SetBool("runB", true);
+                sr.flipX = false;
             }
         }
-
+        // ───────── IDLE ─────────
+        else
+        {
+            if (Mathf.Abs(lastMoveDir.x) > Mathf.Abs(lastMoveDir.y))
+            {
+                animator.SetBool("idleL", true);
+            }
+            else if (lastMoveDir.y > 0)
+            {
+                animator.SetBool("idleF", true);
+            }
+            else
+            {
+                animator.SetBool("idleB", true);
+            }
+        }
     }
 }
