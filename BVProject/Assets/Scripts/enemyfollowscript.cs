@@ -4,11 +4,18 @@ public class EnemyAI : MonoBehaviour
 {
     public Transform player;
 
+
     public float detectionRadius = 6f;
     public float attackRadius = 2f;
     public float moveSpeed = 3f;
 
-    private bool isAttacking = false;
+    public float damage = 10f;
+    public float attackCooldown = 2f;
+    float lastAttackTime = 0f;
+
+
+
+    public PlayerStats playerStats;
 
     void Update()
     {
@@ -19,19 +26,17 @@ public class EnemyAI : MonoBehaviour
         // ATTACK ZONE
         if (distance <= attackRadius)
         {
-            isAttacking = true;
             AttackPlayer();
         }
         // FOLLOW ZONE
         else if (distance <= detectionRadius)
         {
-            isAttacking = false;
             FollowPlayer();
         }
         // OUT OF RANGE
         else
         {
-            isAttacking = false;
+            
         }
     }
 
@@ -43,9 +48,13 @@ public class EnemyAI : MonoBehaviour
 
     void AttackPlayer()
     {
-        // Stop movement automatically because FollowPlayer() is not called
-        // Put animation / damage logic here
+         if (Time.time >= lastAttackTime + attackCooldown)
+    {
         Debug.Log("Enemy Attacking!");
+        playerStats.TakeDamage((int)damage);
+
+        lastAttackTime = Time.time;
+    }
     }
 
     void OnDrawGizmosSelected()

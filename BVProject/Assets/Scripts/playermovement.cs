@@ -62,7 +62,7 @@ public class movementstatemanager : MonoBehaviour
             lastInput = LastInput.None;
         }
 
-        Debug.Log(prevLastInput + " " + lastInput);
+        // Debug.Log(prevLastInput + " " + lastInput);
 
         if (lastInput == LastInput.Left)
         {
