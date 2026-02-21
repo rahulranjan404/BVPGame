@@ -200,7 +200,7 @@ public class movementstatemanager : MonoBehaviour
         GetDirAndMove();
     }
 
-    enum LastInput
+    public enum LastInput
     {
         None,
         Left,
@@ -209,8 +209,8 @@ public class movementstatemanager : MonoBehaviour
         Down
     }
     List<LastInput> heldInputs = new List<LastInput>(); //new
-    LastInput lastInput = LastInput.None;
-    LastInput prevLastInput = LastInput.None;
+    public LastInput lastInput = LastInput.None;
+    public LastInput prevLastInput = LastInput.None;
     void GetDirAndMove()
     {
         HandleKey(KeyCode.W, LastInput.Up);
@@ -315,6 +315,8 @@ public class movementstatemanager : MonoBehaviour
             {
                 animator.SetBool("idleL", true);
                 sr.flipX = true;
+                
+                
             }
             else if (prevLastInput == LastInput.Up)
             {
